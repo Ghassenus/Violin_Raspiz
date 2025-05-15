@@ -1,10 +1,14 @@
-<!-- index.html -->
-<script type="module">
-  import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
-  import { router } from './router.js'
-  import App from './App.vue'
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Violin UI</title>
+  <script src="./config.js"></script>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body style="background: #101010; color: white">
+  <div id="app"></div>
 
-  const app = createApp(App)
-  app.use(router)
-  app.mount('#app')
-</script>
+  <script type="module" src="main.js"></script>
+</body>
+</html>
