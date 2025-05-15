@@ -1,0 +1,12 @@
+[Unit]
+Description=E-Violin RaspZ Orchestrator
+After=network.target
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/raspz
+ExecStart=/home/pi/flaskenv/bin/python main.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

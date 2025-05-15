@@ -1,0 +1,10 @@
+{
+    "python.pythonPath": "/home/pi/flaskenv/bin/python",
+    "code-runner.executorMap": {
+        "python": "/home/pi/violon/run.sh"
+    },
+    "code-runner.runInTerminal": true,
+    "python.terminal.activateEnvironment": true,
+    "python.analysis.typeCheckingMode": "off",
+    "python.linting.enabled": false
+}

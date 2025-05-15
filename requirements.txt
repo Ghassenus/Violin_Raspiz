@@ -1,0 +1,4 @@
+# E-Violin RaspZ requirements
+flask
+flask_socketio
+eventlet

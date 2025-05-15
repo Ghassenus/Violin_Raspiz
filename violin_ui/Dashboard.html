@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>ESP32 Violin - Dashboard</title>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body { background: #101010; color: white; font-family: sans-serif; padding: 20px; }
+    #console_log { background: black; color: #0f0; padding: 10px; font-family: monospace; height: 200px; overflow-y: scroll; }
+    button { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Violin Dashboard</h1>
+
+  <h2>Bluetooth (ESP1)</h2>
+  <div id="connected_device"></div>
+
+  <h2>Bluetooth (RaspZ)</h2>
+  <button onclick="scanBluetoothRaspz()">📡 Scanner via RaspZ</button>
+  <div id="bt_raspz_results"></div>
+
+  <h2>Console</h2>
+  <div id="console_log"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
