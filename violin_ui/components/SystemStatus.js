@@ -1,33 +1,37 @@
-<template>
-  <div class="status-card">
-    <h3>État Système ESP1</h3>
-    <div v-if="status">
-      <p>Wi-Fi: <b>{{ status.wifi ? 'Connecté' : 'Déconnecté' }}</b></p>
-      <p>IP: {{ status.ip }} — SSID: {{ status.ssid }}</p>
-      <p>RSSI: {{ status.rssi }} dBm</p>
-      <p>Batterie: {{ status.batt }}% ({{ status.batt_voltage }} mV)</p>
-      <p>RAM: {{ status.ram_usage }}% — Flash: {{ status.flash_usage }}%</p>
+// components/SystemStatus.js
+export default {
+  template: `
+    <div class="status-card">
+      <h3>📡 Statut Système ESP1</h3>
+      <div v-if="status">
+        <p><strong>IP :</strong> {{ status.ip }}</p>
+        <p><strong>SSID :</strong> {{ status.ssid }}</p>
+        <p><strong>Wi-Fi :</strong> {{ status.wifi ? 'Connecté' : 'Déconnecté' }}</p>
+        <p><strong>RSSI :</strong> {{ status.rssi }} dBm</p>
+        <p><strong>Batterie :</strong> {{ status.batt }}% ({{ status.batt_voltage }} mV)</p>
+        <p><strong>RAM :</strong> {{ status.ram_usage }}% — Flash: {{ status.flash_usage }}%</p>
+        <p><strong>Heure :</strong> {{ status.hour }}:{{ status.minute.toString().padStart(2, '0') }}</p>
+        <p><strong>Date :</strong> {{ status.day }}/{{ status.month }}/{{ status.year }}</p>
+      </div>
+      <div v-else>Chargement...</div>
     </div>
-    <div v-else>Chargement...</div>
-  </div>
-</template>
-
-<script setup>
-import { onMounted, ref } from 'vue';
-
-const status = ref(null);
-const ESP1 = window.VIOLIN_CONFIG.ESP1_IP;
-const RASPI = window.VIOLIN_CONFIG.RASPI_IP;
-
-function refresh() {
-  fetch(`http://${ESP1}/api/status`)
-    .then(r => r.json())
-    .then(json => status.value = json)
-    .catch(e => console.warn("Erreur ESP1", e));
-}
-
-onMounted(() => {
-  refresh();
-  setInterval(refresh, 5000);
-});
-</script>
+  `,
+  data() {
+    return {
+      status: null
+    };
+  },
+  mounted() {
+    this.refreshStatus();
+    setInterval(this.refreshStatus, 5000);
+  },
+  methods: {
+    refreshStatus() {
+      const url = `http://${window.VIOLIN_CONFIG.ESP1_IP}/api/status`;
+      fetch(url)
+        .then(res => res.json())
+        .then(data => { this.status = data; })
+        .catch(err => console.warn("Erreur ESP1:", err));
+    }
+  }
+};
