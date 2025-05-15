@@ -1,0 +1,5 @@
+{
+  "types": ["WIFI", "ACK", "STATUS", "PING", "CMD"],
+  "modes": ["STA", "AP"],
+  "statuses": ["CONNECTED", "FAILED", "WAITING"]
+}

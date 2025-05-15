@@ -32,7 +32,7 @@ def start_scan():
     if _scan_running:
         return False
 
-    subprocess.run(["rfkill", "unblock", "bluetooth"], stdout=subprocess.DEVNULL)
+    #subprocess.run(["rfkill", "unblock", "bluetooth"], stdout=subprocess.DEVNULL)
     subprocess.run(["bluetoothctl", "power", "on"], stdout=subprocess.DEVNULL)
 
     _scan_results = []

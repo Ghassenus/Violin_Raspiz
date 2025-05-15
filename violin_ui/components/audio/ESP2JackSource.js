@@ -8,7 +8,7 @@ export default {
   `,
   methods: {
     toggle() {
-      fetch(`${RASPI_IP}/api/audio/source/jack/toggle`, { method: "POST" });
+      fetch(`http://${window.VIOLIN_CONFIG.RASPI_IP}/api/audio/source/jack/toggle`, { method: "POST" });
     }
   }
 }

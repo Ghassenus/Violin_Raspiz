@@ -13,7 +13,7 @@ export default {
       const form = new FormData();
       form.append("file", file);
 
-      fetch(`${RASPI_IP}/api/audio/upload`, {
+      fetch(`http://${window.VIOLIN_CONFIG.RASPI_IP}/api/audio/upload`, {
         method: "POST",
         body: form
       });

@@ -15,10 +15,10 @@ export default {
   methods: {
     toggleSource(key) {
       this.sources.find(s => s.key === key).active = !this.sources.find(s => s.key === key).active;
-      fetch(`/api/audio/source/${key}/${this.sources.find(s => s.key === key).active ? 'enable' : 'disable'}`);
+      fetch(`http://${window.VIOLIN_CONFIG.RASPI_IP}/api/audio/source/${key}/${this.sources.find(s => s.key === key).active ? 'enable' : 'disable'}`);
     },
     updateVolume(key, val) {
-      fetch(`/api/audio/source/${key}/params`, {
+      fetch(`http://${window.VIOLIN_CONFIG.RASPI_IP}/api/audio/source/${key}/params`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ volume: parseFloat(val) })

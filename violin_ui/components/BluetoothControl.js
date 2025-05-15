@@ -22,29 +22,29 @@ export default {
   },
   methods: {
     startScan() {
-      fetch(`${window.RASPZ_BASE}/api/bluetooth/scan/start`, { method: "POST" })
+      fetch(`http://${window.VIOLIN_CONFIG.RASPI_IP}/api/bluetooth/scan/start`, { method: "POST" })
         .then(() => setTimeout(this.refresh, 5000));
     },
     refresh() {
-      fetch(`${window.RASPZ_BASE}/api/bluetooth/scan/results`)
+      fetch(`http://${window.VIOLIN_CONFIG.RASPI_IP}/api/bluetooth/scan/results`)
         .then(res => res.json())
         .then(data => { this.devices = data.devices });
     },
     connect(mac) {
-      fetch(`${window.RASPZ_BASE}/api/bluetooth/connect`, {
+      fetch(`http://${window.VIOLIN_CONFIG.RASPI_IP}/api/bluetooth/connect`, {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mac })
       }).then(() => alert("Connexion envoyée"));
     },
     disconnect() {
-      fetch(`${window.RASPZ_BASE}/api/bluetooth/disconnect`, { method: "POST" });
+      fetch(`http://${window.VIOLIN_CONFIG.RASPI_IP}/api/bluetooth/disconnect`, { method: "POST" });
     },
     toggleAuto() {
-      fetch(`${window.RASPZ_BASE}/api/bluetooth/autoconnect`)
+      fetch(`http://${window.VIOLIN_CONFIG.RASPI_IP}/api/bluetooth/autoconnect`)
         .then(res => res.json())
         .then(data => {
-          fetch(`${window.RASPZ_BASE}/api/bluetooth/autoconnect`, {
+          fetch(`${window.VIOLIN_CONFIG.RASPI_IP}/api/bluetooth/autoconnect`, {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ enabled: !data.autoconnect })

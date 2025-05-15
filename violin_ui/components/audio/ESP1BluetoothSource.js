@@ -8,7 +8,7 @@ export default {
   `,
   methods: {
     toggle() {
-      fetch(`${RASPI_IP}/api/audio/source/esp1/toggle`, { method: "POST" });
+      fetch(`http://${window.VIOLIN_CONFIG.RASPI_IP}/api/audio/source/esp1/toggle`, { method: "POST" });
     }
   }
 }

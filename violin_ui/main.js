@@ -1,5 +1,11 @@
-import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
 import App from './App.js'
-import { router } from './router.js'
+import { getCurrentRouteComponent } from './router.js'
 
-createApp(App).use(router).mount('#app')
+const app = Vue.createApp(App)
+app.component('CurrentPage', getCurrentRouteComponent())
+app.mount('#app')
+
+window.addEventListener('hashchange', () => {
+  const route = getCurrentRouteComponent()
+  app.component('CurrentPage', route)
+})

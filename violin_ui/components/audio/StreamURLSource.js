@@ -12,7 +12,7 @@ export default {
   },
   methods: {
     startStream() {
-      fetch(`${RASPI_IP}/api/audio/url`, {
+      fetch(`http://${window.VIOLIN_CONFIG.RASPI_IP}/api/audio/url`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: this.url })

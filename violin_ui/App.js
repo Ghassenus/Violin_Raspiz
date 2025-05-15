@@ -1,19 +1,14 @@
-import Dashboard from './pages/Dashboard.js'
-import Settings from './pages/Settings.js'
-
 export default {
-  name: 'App',
   template: `
     <div>
       <nav class="navbar">
-        <a href="#/" :class="{active: $route.path === '/'}">🏠 Dashboard</a>
-        <a href="#/settings" :class="{active: $route.path === '/settings'}">⚙️ Réglages</a>
+        <a href="#/">🏠 Dashboard</a>
+        <a href="#/wifi">📶 WiFi</a>
+        <a href="#/bluetooth">🔵 Bluetooth</a>
+        <a href="#/audio">🎵 Audio</a>
+        <a href="#/settings">⚙️ Réglages</a>
       </nav>
-      <router-view />
+      <CurrentPage />
     </div>
-  `,
-  components: {
-    Dashboard,
-    Settings
-  }
+  `
 }

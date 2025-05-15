@@ -4,6 +4,7 @@ import threading
 from utils.logger import log
 from api.flask_server import start_flask, socketio
 from network import bluetooth_manager
+from audio.sources import source_websocket
 
 def main():
     log("=== RaspZ Orchestrator démarré ===")
@@ -17,6 +18,8 @@ def main():
 
     # Injecter socketio dans le gestionnaire Bluetooth
     bluetooth_manager.set_socketio(socketio)
+
+    source_websocket.start_async_server()
 
     while True:
         log("RaspZ actif... en attente.")

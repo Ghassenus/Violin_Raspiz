@@ -1,7 +1,7 @@
 export default {
   methods: {
     send(cmd) {
-      fetch(`/api/audio/playback/${cmd}`, { method: "POST" });
+      fetch(`http://${window.VIOLIN_CONFIG.RASPI_IP}/api/audio/playback/${cmd}`, { method: "POST" });
     }
   },
   template: `

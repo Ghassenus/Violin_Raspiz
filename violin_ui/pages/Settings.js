@@ -18,13 +18,13 @@ export default {
     };
   },
   mounted() {
-    fetch(`${window.ESP1_BASE}/api/status`)
+    fetch(`http://${window.VIOLIN_CONFIG.ESP1_IP}/api/status`)
       .then(res => res.json())
       .then(data => this.brightness = data.brightness || 50);
   },
   methods: {
     updateBrightness() {
-      fetch(`${window.ESP1_BASE}/api/params/brightness`, {
+      fetch(`http://${window.VIOLIN_CONFIG.ESP1_IP}/api/params/brightness`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ percent: this.brightness })
@@ -32,7 +32,7 @@ export default {
     },
     reboot() {
       if (confirm("Redémarrer ESP32 ?")) {
-        fetch(`${window.ESP1_BASE}/api/system/reboot`, { method: "POST" });
+        fetch(`http://${window.VIOLIN_CONFIG.ESP1_IP}/api/system/reboot`, { method: "POST" });
       }
     }
   }

@@ -1,15 +1,18 @@
-// router.js (nouvelle version compatible avec .js components)
-import { createRouter, createWebHashHistory } from 'https://unpkg.com/vue-router@4/dist/vue-router.esm-browser.js'
-
 import Dashboard from './pages/Dashboard.js'
-import Settings from './pages/Settings.js'
+import WifiPage from './pages/WifiPage.js'
+import BluetoothPage from './pages/BluetoothPage.js'
+import AudioPage from './pages/AudioPage.js'
+import SettingsPage from './pages/SettingsPage.js'
 
-const routes = [
-  { path: '/', component: Dashboard, name: 'Dashboard' },
-  { path: '/settings', component: Settings, name: 'Settings' }
-]
+const routes = {
+  '/': Dashboard,
+  '/wifi': WifiPage,
+  '/bluetooth': BluetoothPage,
+  '/audio': AudioPage,
+  '/settings': SettingsPage
+}
 
-export const router = createRouter({
-  history: createWebHashHistory(),
-  routes
-})
+export function getCurrentRouteComponent() {
+  const hash = window.location.hash.replace('#', '') || '/'
+  return routes[hash] || Dashboard
+}

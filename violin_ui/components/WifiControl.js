@@ -17,7 +17,7 @@ export default {
   },
   methods: {
     connectWifi() {
-      fetch(`${window.ESP1_BASE}/api/wifi/connect`, {
+      fetch(`http://${window.VIOLIN_CONFIG.ESP1_IP}/api/wifi/connect`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ssid: this.ssid, pass: this.password })

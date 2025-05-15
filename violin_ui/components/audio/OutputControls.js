@@ -7,7 +7,7 @@ export default {
   methods: {
     setOutput(target) {
       this.target = target;
-      fetch(`/api/audio/output`, {
+      fetch(`http://${window.VIOLIN_CONFIG.RASPI_IP}/api/audio/output`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ target })
