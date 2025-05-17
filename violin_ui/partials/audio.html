@@ -1,11 +1,14 @@
 <h2>🎵 Audio</h2>
-<input type="file" id="local_audio_file">
-<input id="url_input" placeholder="URL">
-<button id="playURL">▶️ Lire URL</button>
-<select id="audio_output">
+<input type="file" id="local_audio_file" class="form-control form-control-sm bg-dark text-light mb-2">
+<input id="url_input" class="form-control bg-dark text-light mb-2" placeholder="URL">
+<button id="playURL" class="btn btn-primary mb-2">▶️ Lire URL</button>
+<select id="audio_output" class="form-select bg-dark text-light mb-2">
   <option value="bluetooth">Bluetooth</option>
   <option value="jack">Jack</option>
   <option value="both">Les deux</option>
 </select>
-<button id="play">Play</button><button id="pause">Pause</button>
-<span id="audio_timer">00:00</span>
+<button id="play" class="btn btn-secondary me-2">▶️ Play</button>
+<button id="pause" class="btn btn-secondary">⏸️ Pause</button>
+<span id="audio_timer" class="ms-2">00:00</span>
+<div id="audio_status" class="mt-2"></div>
+<audio id="audio_player" style="display: none;"></audio>

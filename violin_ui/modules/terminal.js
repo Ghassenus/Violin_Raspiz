@@ -1,16 +1,31 @@
+import { log } from './log.js';
+
 export default {
   init() {
-    const espSocket = new WebSocket(`ws://${ESP1_IP}:81`);
-    espSocket.onmessage = event => {
-      const msg = JSON.parse(event.data);
-      this.appendUartError(msg.data);
-    };
+    const uartEl    = document.getElementById("uart_errors");
+    const consoleEl = document.getElementById("console_log");
+    const clearBtn  = document.getElementById("clear_console");
+
+    // Contenu simulé
+    if (uartEl) {
+      uartEl.innerHTML = "[UART ERROR] Simulation d'erreur UART";
+    }
+    if (consoleEl) {
+      consoleEl.innerHTML = "[INFO] Simulation init console<br>";
+    }
+
+    // Lier le bouton "Effacer"
+    if (clearBtn) {
+      clearBtn.onclick = () => this.clear();
+    }
+    log.info("Console simulée initialisée");
   },
 
-  appendUartError(msg) {
-    const logEl = document.getElementById("uart_errors");
-    const div = document.createElement("div");
-    div.textContent = "[UART ERROR] " + msg;
-    logEl.appendChild(div);
+  clear() {
+    const uartEl    = document.getElementById("uart_errors");
+    const consoleEl = document.getElementById("console_log");
+    if (uartEl)    uartEl.innerHTML = "";
+    if (consoleEl) consoleEl.innerHTML = "";
+    log.info("Console effacée");
   }
 };

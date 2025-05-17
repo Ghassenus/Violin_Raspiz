@@ -1,5 +1,35 @@
 <h2>⚙️ Réglages</h2>
-<input id="hour_input"><input id="minute_input">
-<button id="set_time">Heure</button>
-<input id="brightness_slider" type="range">
-<button id="set_brightness">Luminosité</button>
+
+<!-- --- Date --- -->
+<div class="d-flex mb-2" style="gap:0.5rem; flex-wrap: wrap; max-width: 260px;">
+  <input id="day_input"   type="number" min="1"  max="31" class="form-control bg-dark text-light" placeholder="JJ">
+  <input id="month_input" type="number" min="1"  max="12" class="form-control bg-dark text-light" placeholder="MM">
+  <input id="year_input"  type="number" min="2000" max="2099" class="form-control bg-dark text-light" placeholder="AAAA">
+</div>
+<button id="set_date" class="btn btn-primary mb-3">📅 Définir la date</button>
+
+<!-- --- Heure & Format --- -->
+<div class="mb-2">
+  <div class="d-flex align-items-center mb-1">
+    <input id="hour_input"   type="number" min="0"  max="23" class="form-control bg-dark text-light me-1" style="width: 60px;" placeholder="HH">
+    <input id="minute_input" type="number" min="0"  max="59" class="form-control bg-dark text-light"     style="width: 60px;" placeholder="MM">
+  </div>
+  <div class="form-check form-check-inline">
+    <input class="form-check-input" type="radio" name="timeFormat" id="format24" value="24">
+    <label class="form-check-label" for="format24">24 h</label>
+  </div>
+  <div class="form-check form-check-inline">
+    <input class="form-check-input" type="radio" name="timeFormat" id="format12" value="12">
+    <label class="form-check-label" for="format12">12 h</label>
+  </div>
+</div>
+<button id="set_time" class="btn btn-primary mb-3">🕒 Définir l’heure & format</button>
+
+<!-- --- Luminosité --- -->
+<div class="d-flex align-items-center mb-2" style="max-width: 300px;">
+  <input id="brightness_slider" type="range" min="0" max="100" value="50" class="form-range me-2">
+  <span id="brightness_label">50 %</span>
+  <button id="set_brightness" class="btn btn-success ms-2">🔆 OK</button>
+</div>
+
+<div id="settings_status" class="mt-2"></div>

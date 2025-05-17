@@ -1,25 +1,22 @@
-body { background: #111; color: white; padding: 20px; font-family: sans-serif; }
-.navbar {
-  background-color: #222;
-  padding: 10px;
+body {
+  background: #111;
+  color: white;
+  padding: 20px;
+  font-family: sans-serif;
+}
+
+/* Navigation */
+nav {
   display: flex;
+  flex-wrap: wrap;
   gap: 15px;
 }
-
-.navbar a {
-  color: white;
-  text-decoration: none;
-}
-
-.navbar a.active {
+nav a.active {
   font-weight: bold;
   color: #00f0ff;
 }
 
-.terminal {
-  margin-top: 20px;
-}
-
+/* Console log styling */
 .log-console {
   background: #000;
   color: #0f0;
@@ -28,5 +25,45 @@ body { background: #111; color: white; padding: 20px; font-family: sans-serif; }
   padding: 10px;
   height: 150px;
   overflow-y: auto;
+  border: 1px solid #444;
+}
+
+/* Responsive ajustements pour petits écrans */
+@media (max-width: 768px) {
+  nav {
+    flex-direction: column;
+  }
+  #main-content input,
+  #main-content select,
+  #main-content button {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Debug : bordure verte pour voir le footer */
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #111;
+  padding: 10px 20px;
+  z-index: 1000;
+  border-top: 2px solid lime;  /* <-- DEBUG, retire ensuite */
+}
+
+main {
+  padding-bottom: 220px;  /* doit être ≥ hauteur du footer */
+}
+
+.log-console {
+  background: #000;
+  color: #0f0;
+  font-family: monospace;
+  font-size: 0.9em;
+  padding: 10px;
+  height: 150px;           /* hauteur fixe */
+  overflow-y: scroll;      /* toujours afficher la barre de scroll */
   border: 1px solid #444;
 }
