@@ -3,104 +3,139 @@ import { log } from './log.js';
 export default {
   autoconnectEnabled: false,
   _devices: [],
-  _scanCount: 0,
   _connectedMac: null,
 
   init() {
-    const btnScan = document.getElementById("bt_scan");
-    const btnAuto = document.getElementById("bt_autoconnect");
+    // Bouton scan
+    const btnScan = document.getElementById('bt_scan');
     if (btnScan) btnScan.onclick = () => this.scan();
+
+    // Bouton auto-connect
+    const btnAuto = document.getElementById('bt_autoconnect');
     if (btnAuto) btnAuto.onclick = () => this.toggleAutoconnect();
-    // Liste initiale vide
+
+    // Initialisation de la liste et du statut
     this._devices = [];
+    this._connectedMac = null;
     this.refresh();
+
+    // Écoute des événements Socket.IO de Raspiz
+    if (window.raspSocket) {
+      // À chaque appareil détecté pendant le scan
+      window.raspSocket.on('bt_device', dev => {
+        this._devices.push({ mac: dev.mac, name: dev.name });
+        this.refresh();
+      });
+      // Statut du scan (started/finished)
+      window.raspSocket.on('bt_scan', data => {
+        const statusEl = document.getElementById('bt_status');
+        if (!statusEl) return;
+
+        let msg;
+        if (data && typeof data === 'object' && data.status) msg = data.status;
+        else if (typeof data === 'string') msg = data;
+        else msg = JSON.stringify(data);
+
+        // Afficher statut
+        statusEl.innerHTML = `<div class=\"alert alert-info\">🔔 Scan : ${msg}</div>`;
+
+        // Lorsque le scan est terminé, réactiver le bouton et afficher résumé
+        if (/finished|done/i.test(msg)) {
+          const btn = document.getElementById('bt_scan');
+          if (btn) btn.disabled = false;
+          statusEl.innerHTML = `<div class=\"alert alert-success\">✅ Scan terminé : ${this._devices.length} appareil(s)</div>`;
+        }
+      });
+    }
   },
 
   scan() {
-    const statusEl = document.getElementById("bt_status");
-    if (!statusEl) return;
-    document.getElementById("bt_scan").disabled = true;
-    statusEl.innerHTML = `<div class="alert alert-info">⏳ Scan Bluetooth en cours...</div>`;
-    setTimeout(() => {
-      this._scanCount += 1;
-      // Appareils fictifs détectés (un appareil supplémentaire après le 1er scan)
-      const baseDevices = [
-        { name: "Enceinte JBL", mac: "AA:BB:CC:DD:EE:FF" },
-        { name: "", mac: "11:22:33:44:55:66" }
-      ];
-      if (this._scanCount > 1) {
-        baseDevices.push({ name: "Casque BT", mac: "77:88:99:AA:BB:CC" });
-      }
-      this._devices = baseDevices;
-      this.refresh();
-      statusEl.innerHTML = `<div class="alert alert-success">✅ Scan terminé : ${this._devices.length} appareil(s).</div>`;
-      document.getElementById("bt_scan").disabled = false;
-      log.info("🔍 Scan Bluetooth simulé - appareils détectés");
-    }, 3000);
+    // Réinitialiser la liste d'appareils
+    this._devices = [];
+    this.refresh();
+
+    // Désactiver le bouton et afficher le message de démarrage
+    const btn = document.getElementById('bt_scan');
+    if (btn) btn.disabled = true;
+    const statusEl = document.getElementById('bt_status');
+    if (statusEl) statusEl.innerHTML = `<div class=\"alert alert-info\">⏳ Scan lancé…</div>`;
+
+    // Lancer le scan côté backend
+    fetch(`${window.RASPIZ_URL}/api/bluetooth/scan/start`, { method: 'POST' })
+      .catch(err => {
+        if (statusEl) statusEl.innerHTML = `<div class=\"alert alert-danger\">❌ Erreur scan : ${err}</div>`;
+        if (btn) btn.disabled = false;
+        log.error('Scan Bluetooth : ' + err);
+      });
   },
 
   toggleAutoconnect() {
     this.autoconnectEnabled = !this.autoconnectEnabled;
-    const btn = document.getElementById("bt_autoconnect");
-    if (btn) {
-      btn.innerText = this.autoconnectEnabled ? "🔄 AutoConnect: ✅" : "🔄 AutoConnect: ❌";
-    }
-    const statusEl = document.getElementById("bt_status");
+    const btn = document.getElementById('bt_autoconnect');
+    if (btn) btn.innerText = this.autoconnectEnabled
+      ? '🔄 AutoConnect : ✅'
+      : '🔄 AutoConnect : ❌';
+    const statusEl = document.getElementById('bt_status');
     if (statusEl) {
-      statusEl.innerHTML = `<div class="alert alert-info">AutoConnect ${this.autoconnectEnabled ? 'activé' : 'désactivé'}.</div>`;
+      statusEl.innerHTML = `<div class=\"alert alert-info\">AutoConnect ${this.autoconnectEnabled ? 'activé' : 'désactivé'}.</div>`;
     }
     log.info(`AutoConnect ${this.autoconnectEnabled ? 'ON' : 'OFF'}`);
   },
 
   refresh() {
-    const zone = document.getElementById("bt_devices");
+    const zone = document.getElementById('bt_devices');
     if (!zone) return;
-    zone.innerHTML = "";
+    zone.innerHTML = '';
     if (this._devices.length === 0) {
-      zone.innerHTML = `<em>Aucun appareil pour le moment. Cliquez sur "Scanner".</em>`;
+      zone.innerHTML = `<em>Aucun appareil pour le moment. Cliquez sur \"Scanner\".</em>`;
       return;
     }
     this._devices.forEach(dev => {
-      const div = document.createElement("div");
-      const name = dev.name && dev.name.length ? dev.name : "(Sans nom)";
+      const name = dev.name && dev.name.length ? dev.name : '(Sans nom)';
+      const isConnected = this._connectedMac === dev.mac;
+      const div = document.createElement('div');
       div.innerHTML =
         `<b>${name}</b> – ${dev.mac} ` +
-        `${this._connectedMac === dev.mac ? "✅ Connecté" : `<button onclick="bluetooth.connect('${dev.mac}')">🔗 Connecter</button>`}` +
-        ` <button onclick="bluetooth.disconnect()">🔌 Déconnecter</button>`;
+        `${isConnected
+          ? '✅ Connecté'
+          : `<button onclick=\"bluetooth.connect('${dev.mac}')\">🔗 Connecter</button>`
+        } ` +
+        `<button onclick=\"bluetooth.disconnect()\">🔌 Déconnecter</button>`;
       zone.appendChild(div);
     });
   },
 
   connect(mac) {
-    const statusEl = document.getElementById("bt_status");
-    const dev = this._devices.find(d => d.mac === mac);
-    const name = dev && dev.name && dev.name.length ? dev.name : mac;
-    if (statusEl) {
-      statusEl.innerHTML = `<div class="alert alert-info">⏳ Connexion à ${name}...</div>`;
-    }
-    // Simulation de la connexion réussie
-    setTimeout(() => {
-      this._connectedMac = mac;
-      this.refresh();
-      if (statusEl) {
-        statusEl.innerHTML = `<div class="alert alert-success">✅ Connecté à ${name}</div>`;
-      }
-      log.info(`🔗 Connexion Bluetooth simulée: ${mac}`);
-    }, 1000);
+    const statusEl = document.getElementById('bt_status');
+    if (statusEl) statusEl.innerHTML = `<div class=\"alert alert-info\">⏳ Connexion à ${mac}…</div>`;
+
+    fetch(`${window.RASPIZ_URL}/api/bluetooth/connect`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mac })
+    })
+      .then(r => r.json())
+      .then(j => {
+        this._connectedMac = mac;
+        this.refresh();
+        if (statusEl) statusEl.innerHTML = `<div class=\"alert alert-success\">✅ Connecté à ${mac}</div>`;
+        log.info(`🔗 Connexion Bluetooth: ${mac}`);
+      })
+      .catch(err => {
+        if (statusEl) statusEl.innerHTML = `<div class=\"alert alert-danger\">❌ ${err}</div>`;
+        log.error(err);
+      });
   },
 
   disconnect() {
-    const statusEl = document.getElementById("bt_status");
-    if (this._connectedMac) {
-      const disconnectedMac = this._connectedMac;
-      this._connectedMac = null;
-      this.refresh();
-      if (statusEl) {
-        statusEl.innerHTML = `<div class="alert alert-secondary">🔌 Appareil Bluetooth déconnecté</div>`;
-      }
-      log.info(`🔌 Déconnexion Bluetooth simulée: ${disconnectedMac}`);
-    } else {
-      log.info("Aucun appareil n'était connecté.");
-    }
+    fetch(`${window.RASPIZ_URL}/api/bluetooth/disconnect`, { method: 'POST' })
+      .then(() => {
+        this._connectedMac = null;
+        this.refresh();
+        const statusEl = document.getElementById('bt_status');
+        if (statusEl) statusEl.innerHTML = `<div class=\"alert alert-secondary\">🔌 Déconnecté</div>`;
+        log.info('🔌 Déconnexion Bluetooth');
+      })
+      .catch(err => log.error(err));
   }
 };

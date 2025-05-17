@@ -36,41 +36,30 @@ export default {
   },
 
   uploadLocalAudio(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    // Arrêter l'audio courant s'il y en a un
-    audioEl.pause();
-    audioEl.currentTime = 0;
-    // Charger le fichier local dans le player audio
-    const url = URL.createObjectURL(file);
-    audioEl.src = url;
-    const statusEl = document.getElementById("audio_status");
-    if (statusEl) {
-      statusEl.innerHTML = `<div class="alert alert-success">📂 Fichier "${file.name}" chargé. Appuyez sur Play pour lire.</div>`;
-    }
-    log.info("📂 Fichier audio local chargé");
+  const file = e.target.files[0];
+  const fr   = new FormData();
+  fr.append("file", file);
+  fetch(`${window.RASPIZ_URL}/api/audio/upload`, {
+    method: "POST",
+    body: fr
+  })
+    .then(r => r.json())
+    .then(j => this._show(`Uploaded : ${j.status}`))
+    .catch(err => this._show(`❌ ${err}`));
   },
 
   playURL() {
-    const url = document.getElementById("url_input").value.trim();
-    if (!url) return;
-    // Arrêter l'audio courant s'il y en a un
-    audioEl.pause();
-    audioEl.currentTime = 0;
-    audioEl.src = url;
-    const statusEl = document.getElementById("audio_status");
-    audioEl.play().then(() => {
-      if (statusEl) {
-        statusEl.innerHTML = `<div class="alert alert-success">▶️ Lecture de l'URL en cours...</div>`;
-      }
-      log.info(`▶️ Lecture URL: ${url}`);
-    }).catch(err => {
-      if (statusEl) {
-        statusEl.innerHTML = `<div class="alert alert-danger">❌ Échec de lecture de l'URL.</div>`;
-      }
-      log.error("Échec lecture URL: " + err);
-    });
+    const url = document.getElementById("url_input").value;
+    fetch(`${window.RASPIZ_URL}/api/audio/youtube`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url })
+    })
+      .then(r => r.json())
+      .then(j => this._show(`Stream : ${j.status}`))
+      .catch(err => this._show(`❌ ${err}`));
   },
+
 
   setOutput() {
     const target = document.getElementById("audio_output").value;

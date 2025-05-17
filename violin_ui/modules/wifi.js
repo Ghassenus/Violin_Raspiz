@@ -9,81 +9,51 @@ export default {
   },
 
   scan() {
-    const statusEl = document.getElementById("wifi_status");
-    const listEl = document.getElementById("wifi_list");
-    if (!statusEl || !listEl) return;
-    // Désactiver les boutons pendant le scan
-    document.getElementById("wifi_scan").disabled = true;
-    document.getElementById("wifi_connect").disabled = true;
-    statusEl.innerHTML = `<div class="alert alert-info">⏳ Scan Wi-Fi en cours...</div>`;
-    setTimeout(() => {
-      // Réseaux Wi-Fi fictifs détectés
-      const networks = [
-        { ssid: "Livebox-1234", rssi: -80, secure: true },
-        { ssid: "FreeWifi", rssi: -60, secure: false },
-        { ssid: "PhoneHotspot", rssi: -50, secure: true }
-      ];
-      // Affichage de la liste des réseaux
+  const statusEl = document.getElementById("wifi_status");
+  fetch(`${window.ESP1_URL}/api/wifi/scan`, { method: "POST" })
+    .then(() => {
+      statusEl.innerHTML = `<div class="alert alert-info">⏳ Scan Wi-Fi en cours…</div>`;
+      return fetch(`${window.ESP1_URL}/api/wifi/list`);
+    })
+    .then(r => r.json())
+    .then(j => {
+      const listEl = document.getElementById("wifi_list");
       listEl.innerHTML = "";
-      networks.forEach(net => {
+      j.networks.forEach(n => {
         const li = document.createElement("li");
-        li.innerHTML =
-          `<span style="cursor:pointer; text-decoration:underline;" onclick="wifi.selectSSID('${net.ssid}', ${net.secure})">${net.ssid}</span>` +
-          ` – ${net.rssi} dBm ${net.secure ? '🔒' : '🔓'}`;
+        li.innerHTML = `<span class="link-primary" style="cursor:pointer" onclick="wifi.selectSSID('${n.ssid}',true)">${n.ssid}</span>`;
         listEl.appendChild(li);
       });
-      statusEl.innerHTML = `<div class="alert alert-success">✅ Scan terminé : ${networks.length} réseau(x) trouvé(s).</div>`;
-      document.getElementById("wifi_scan").disabled = false;
-      document.getElementById("wifi_connect").disabled = false;
-      log.info("📶 Scan Wi-Fi simulé - réseaux détectés");
-    }, 2000);
-  },
-
-  selectSSID(name, secure) {
-    const ssidField = document.getElementById("ssid_input");
-    const passField = document.getElementById("pass_input");
-    ssidField.value = name;
-    if (passField) {
-      passField.value = "";
-      if (secure) {
-        passField.placeholder = "Mot de passe requis";
-        passField.focus();
-      } else {
-        passField.placeholder = "(aucun mot de passe)";
-      }
-    }
-  },
+      statusEl.innerHTML = `<div class="alert alert-success">✅ ${j.networks.length} réseau(x) trouvé(s)</div>`;
+    })
+    .catch(err => {
+      document.getElementById("wifi_status").innerHTML =
+        `<div class="alert alert-danger">❌ Erreur scan : ${err}</div>`;
+      log.error(err);
+    });
+ },
 
   connect() {
-    const ssid = document.getElementById("ssid_input").value.trim();
-    const pass = document.getElementById("pass_input").value.trim();
-    const statusEl = document.getElementById("wifi_status");
-    if (!ssid) {
-      if (statusEl) {
-        statusEl.innerHTML = `<div class="alert alert-warning">⚠️ Veuillez saisir un SSID.</div>`;
-      }
-      return;
-    }
-    // Simulation de la tentative de connexion
-    document.getElementById("wifi_connect").disabled = true;
-    if (statusEl) {
-      statusEl.innerHTML = `<div class="alert alert-info">⏳ Connexion à "${ssid}"...</div>`;
-    }
-    setTimeout(() => {
-      // Mettre à jour le statut global (connecté)
-      if (window.deviceStatus) {
-        window.deviceStatus.wifi = true;
-        window.deviceStatus.ssid = ssid;
-        window.deviceStatus.ip = window.deviceStatus.ip && window.deviceStatus.ip !== "0.0.0.0"
-          ? window.deviceStatus.ip.replace(/\d+$/, match => Math.min(254, parseInt(match) + 1))
-          : "192.168.1.60";
-        window.deviceStatus.rssi = -50;
-      }
-      if (statusEl) {
-        statusEl.innerHTML = `<div class="alert alert-success">✅ Connecté au réseau "${ssid}".</div>`;
-      }
-      document.getElementById("wifi_connect").disabled = false;
-      log.info(`📶 Connexion simulée au SSID ${ssid}`);
-    }, 1500);
-  }
+    const ssid = document.getElementById("ssid_input").value;
+    const pass = document.getElementById("pass_input").value;
+    const body = JSON.stringify({ ssid, password: pass });
+    // → Si ton ESP1 supporte un /api/wifi/connect avec SSID+pass
+    fetch(`${window.ESP1_URL}/api/wifi/connect`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body
+    })
+      .then(r => r.json())
+      .then(j => {
+        const s = j.status || "ok";
+        document.getElementById("wifi_status").innerHTML =
+          `<div class="alert alert-success">🔗 ${s}</div>`;
+      })
+      .catch(err => {
+        document.getElementById("wifi_status").innerHTML =
+          `<div class="alert alert-danger">❌ ${err}</div>`;
+        log.error(err);
+      });
+  },
+
 };

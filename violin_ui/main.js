@@ -1,4 +1,17 @@
+import { io } from './vendor/socket.io/socket.io.esm.min.js'
 import { log } from './modules/log.js';
+
+
+// Initialise la connexion Socket.IO Raspiz une seule fois
+window.raspSocket = io(window.RASPIZ_SOCKET);
+
+// (Optionnel) loggue l’état de la connexion
+window.raspSocket.on('connect', () => {
+  log.info('Socket.IO Raspiz connecté');
+});
+window.raspSocket.on('disconnect', () => {
+  log.info('Socket.IO Raspiz déconnecté');
+});
 
 const PARTIALS_PATH = "partials/";
 const MODULES_PATH  = "modules/";

@@ -40,71 +40,40 @@ export default {
   },
 
   refreshStatus() {
-    const marquee = document.getElementById("statusMarquee");
-    if (!marquee) return;
-    const data = window.deviceStatus;
-    // Faire évoluer certaines valeurs (simulation)
-    if (data.minute !== undefined) {
-      data.minute += 1;
-      if (data.minute >= 60) {
-        data.minute = 0;
-        data.hour = (data.hour + 1) % 24;
-        // Incrémenter le jour si l'heure boucle (approximation simple)
-        if (data.hour === 0) {
-          data.day = (data.day % 31) + 1;
-          data.month = (data.month % 12) + 1;
-          // (Note: changement d'année non géré pour simplifier)
-        }
-      }
-    }
-    if (data.batt !== undefined && data.batt > 0) {
-      data.batt -= 1;
-      if (data.batt < 0) data.batt = 0;
-      // Tension batterie approximative
-      data.batt_voltage = Math.max(3300, data.batt_voltage - 10);
-    }
-    marquee.innerText =
-      `WiFi: ${data.wifi ? "Connecté" : "Déconnecté"} | ` +
-      `SSID: ${data.ssid || ""} | IP: ${data.ip} | RSSI: ${data.rssi} dBm | ` +
-      `Batt: ${data.batt}% (${data.batt_voltage} mV) | ` +
-      `Heure: ${String(data.hour).padStart(2, '0')}:${String(data.minute).padStart(2, '0')} | ` +
-      `Date: ${data.day}/${data.month}/${data.year} | ` +
-      `${data.fmt24h ? "24h" : "12h"} | ` +
-      `RAM: ${data.ram_usage}% | FLASH: ${data.flash_usage}%`;
+  fetch(`${window.ESP1_URL}/api/status`)
+    .then(r => r.json())
+    .then(data => {
+      const m = document.getElementById("statusMarquee");
+      m.innerText =
+        `WiFi: ${data.wifi ? "OK" : "KO"} | SSID: ${data.ssid} | IP: ${data.ip} | ` +
+        `RSSI: ${data.rssi} dBm | Batt: ${data.batt}% (${data.batt_voltage} mV) | ` +
+        `Date: ${data.day}/${data.month}/${data.year} ${data.hour.toString().padStart(2,'0')}:${data.minute.toString().padStart(2,'0')} | ` +
+        `RAM: ${data.ram_usage}% | FLASH: ${data.flash_usage}%`;
+    })
+    .catch(err => log.error("Status ESP1 : " + err));
   },
-
   rebootESP() {
     const msgDiv = document.getElementById("dashboard_msg");
-    // Simulation du redémarrage : Wi-Fi off pendant 3 sec
-    const prev = { wifi: window.deviceStatus.wifi, ssid: window.deviceStatus.ssid, ip: window.deviceStatus.ip, rssi: window.deviceStatus.rssi };
-    window.deviceStatus.wifi = false;
-    window.deviceStatus.ssid = "(non connecté)";
-    window.deviceStatus.ip = "0.0.0.0";
-    window.deviceStatus.rssi = 0;
-    if (msgDiv) {
-      msgDiv.innerHTML = `<div class="alert alert-warning">🔁 Redémarrage de l'ESP...</div>`;
-    }
-    setTimeout(() => {
-      // Restauration de l'état précédent
-      window.deviceStatus.wifi = prev.wifi;
-      window.deviceStatus.ssid = prev.ssid;
-      window.deviceStatus.ip = prev.ip;
-      window.deviceStatus.rssi = prev.rssi;
-      if (msgDiv) {
-        msgDiv.innerHTML = `<div class="alert alert-success">✅ ESP redémarré</div>`;
-        setTimeout(() => { msgDiv.innerHTML = ""; }, 3000);
-      }
-    }, 3000);
-    log.info("🔄 Redémarrage ESP simulé");
+    fetch(`${window.ESP1_URL}/api/system/reboot`, { method: "POST" })
+      .then(() => {
+        msgDiv.innerHTML = `<div class="alert alert-warning">🔁 Redémarrage en cours…</div>`;
+      })
+      .catch(err => {
+        msgDiv.innerHTML = `<div class="alert alert-danger">❌ Erreur reboot : ${err}</div>`;
+        log.error(err);
+      });
   },
-
   testRaspiAudio() {
     const msgDiv = document.getElementById("dashboard_msg");
-    if (msgDiv) {
-      msgDiv.innerHTML = `<div class="alert alert-info">▶️ Test audio Raspi lancé (simulation)</div>`;
-      setTimeout(() => { msgDiv.innerHTML = ""; }, 3000);
-    }
-    log.info("🔈 Test audio RaspZ simulé");
+    fetch(`${window.RASPIZ_URL}/api/bluetooth/test_audio`, { method: "POST" })
+      .then(r => r.json())
+      .then(j => {
+        msgDiv.innerHTML = `<div class="alert alert-info">▶️ Audio Pi : ${j.status}</div>`;
+      })
+      .catch(err => {
+        msgDiv.innerHTML = `<div class="alert alert-danger">❌ Test audio Pi : ${err}</div>`;
+        log.error(err);
+      });
   },
 
   // Nettoyage lors du changement de page
