@@ -10,16 +10,9 @@ export default {
     <div class="dashboard">
       <h1>🎻 Violin Dashboard</h1>
       <SystemStatus />
-      <WifiControl />
-      <BluetoothControl />
-      <AudioMixer />
     </div>
   `,
   components: {
-    SystemStatus,
-    WifiControl,
-    BluetoothControl,
-    Settings,
-    AudioMixer
+    SystemStatus
   }
 }

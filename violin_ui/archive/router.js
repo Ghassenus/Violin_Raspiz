@@ -1,5 +1,5 @@
 import Dashboard from './pages/Dashboard.js'
-import WifiPage from './pages/WifiPage.js'
+import WifiPage from './pages/Wifi.js'
 import BluetoothPage from './pages/BluetoothPage.js'
 import AudioPage from './pages/AudioPage.js'
 import SettingsPage from './pages/SettingsPage.js'

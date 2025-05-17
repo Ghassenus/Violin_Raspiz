@@ -1,10 +1,12 @@
 import WifiControl from '../components/WifiControl.js'
+
 export default {
+  name: "Wifi",
+  components: { WifiControl },
   template: `
-    <div>
-      <h2>📶 Page Wi-Fi</h2>
+    <div class="page wifi">
+      <h2>📶 Contrôle Wi-Fi</h2>
       <WifiControl />
     </div>
-  `,
-  components: { WifiControl }
+  `
 }
