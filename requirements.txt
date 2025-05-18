@@ -2,4 +2,7 @@
 flask
 flask_socketio
 python-socketio>=5.7
-eventlet>=0.33
+# eventlet>=0.33
+gevent
+gevent-websocket
+psutil

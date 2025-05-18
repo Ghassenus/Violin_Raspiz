@@ -36,14 +36,20 @@ export default {
         else if (typeof data === 'string') msg = data;
         else msg = JSON.stringify(data);
 
+        if (data.status === "started") {
+          // clear your device list in the UI
+          this._devices =[];
+          
+        } 
+
         // Afficher statut
-        statusEl.innerHTML = `<div class=\"alert alert-info\">🔔 Scan : ${msg}</div>`;
+        statusEl.innerHTML = `<div class="alert alert-info">🔔 Scan : ${msg}</div>`;
 
         // Lorsque le scan est terminé, réactiver le bouton et afficher résumé
         if (/finished|done/i.test(msg)) {
           const btn = document.getElementById('bt_scan');
           if (btn) btn.disabled = false;
-          statusEl.innerHTML = `<div class=\"alert alert-success\">✅ Scan terminé : ${this._devices.length} appareil(s)</div>`;
+          statusEl.innerHTML = `<div class="alert alert-success">✅ Scan terminé : ${this._devices.length} appareil(s)</div>`;
         }
       });
     }
@@ -58,12 +64,12 @@ export default {
     const btn = document.getElementById('bt_scan');
     if (btn) btn.disabled = true;
     const statusEl = document.getElementById('bt_status');
-    if (statusEl) statusEl.innerHTML = `<div class=\"alert alert-info\">⏳ Scan lancé…</div>`;
+    if (statusEl) statusEl.innerHTML = `<div class="alert alert-info">⏳ Scan lancé…</div>`;
 
     // Lancer le scan côté backend
     fetch(`${window.RASPIZ_URL}/api/bluetooth/scan/start`, { method: 'POST' })
       .catch(err => {
-        if (statusEl) statusEl.innerHTML = `<div class=\"alert alert-danger\">❌ Erreur scan : ${err}</div>`;
+        if (statusEl) statusEl.innerHTML = `<div class="alert alert-danger">❌ Erreur scan : ${err}</div>`;
         if (btn) btn.disabled = false;
         log.error('Scan Bluetooth : ' + err);
       });
@@ -77,7 +83,7 @@ export default {
       : '🔄 AutoConnect : ❌';
     const statusEl = document.getElementById('bt_status');
     if (statusEl) {
-      statusEl.innerHTML = `<div class=\"alert alert-info\">AutoConnect ${this.autoconnectEnabled ? 'activé' : 'désactivé'}.</div>`;
+      statusEl.innerHTML = `<div class="alert alert-info">AutoConnect ${this.autoconnectEnabled ? 'activé' : 'désactivé'}.</div>`;
     }
     log.info(`AutoConnect ${this.autoconnectEnabled ? 'ON' : 'OFF'}`);
   },
@@ -87,7 +93,7 @@ export default {
     if (!zone) return;
     zone.innerHTML = '';
     if (this._devices.length === 0) {
-      zone.innerHTML = `<em>Aucun appareil pour le moment. Cliquez sur \"Scanner\".</em>`;
+      zone.innerHTML = `<em>Aucun appareil pour le moment. Cliquez sur "Scanner".</em>`;
       return;
     }
     this._devices.forEach(dev => {
@@ -98,16 +104,16 @@ export default {
         `<b>${name}</b> – ${dev.mac} ` +
         `${isConnected
           ? '✅ Connecté'
-          : `<button onclick=\"bluetooth.connect('${dev.mac}')\">🔗 Connecter</button>`
+          : `<button onclick="bluetooth.connect('${dev.mac}')">🔗 Connecter</button>`
         } ` +
-        `<button onclick=\"bluetooth.disconnect()\">🔌 Déconnecter</button>`;
+        `<button onclick="bluetooth.disconnect()">🔌 Déconnecter</button>`;
       zone.appendChild(div);
     });
   },
 
   connect(mac) {
     const statusEl = document.getElementById('bt_status');
-    if (statusEl) statusEl.innerHTML = `<div class=\"alert alert-info\">⏳ Connexion à ${mac}…</div>`;
+    if (statusEl) statusEl.innerHTML = `<div class="alert alert-info">⏳ Connexion à ${mac}…</div>`;
 
     fetch(`${window.RASPIZ_URL}/api/bluetooth/connect`, {
       method: 'POST',
@@ -118,11 +124,11 @@ export default {
       .then(j => {
         this._connectedMac = mac;
         this.refresh();
-        if (statusEl) statusEl.innerHTML = `<div class=\"alert alert-success\">✅ Connecté à ${mac}</div>`;
+        if (statusEl) statusEl.innerHTML = `<div class="alert alert-success">✅ Connecté à ${mac}</div>`;
         log.info(`🔗 Connexion Bluetooth: ${mac}`);
       })
       .catch(err => {
-        if (statusEl) statusEl.innerHTML = `<div class=\"alert alert-danger\">❌ ${err}</div>`;
+        if (statusEl) statusEl.innerHTML = `<div class="alert alert-danger">❌ ${err}</div>`;
         log.error(err);
       });
   },
@@ -133,7 +139,7 @@ export default {
         this._connectedMac = null;
         this.refresh();
         const statusEl = document.getElementById('bt_status');
-        if (statusEl) statusEl.innerHTML = `<div class=\"alert alert-secondary\">🔌 Déconnecté</div>`;
+        if (statusEl) statusEl.innerHTML = `<div class="alert alert-secondary">🔌 Déconnecté</div>`;
         log.info('🔌 Déconnexion Bluetooth');
       })
       .catch(err => log.error(err));

@@ -34,7 +34,7 @@ export default {
       this.wsEsp1.onerror = e => log.error("WS-ESP1 error", e);
       this.wsEsp1.onclose = () => consoleEl.innerHTML += "[WS-ESP1] déconnecté<br>";
     }
-
+  /*
     // 2) WebSocket Raspiz audio (port 8765)
     if (!this.wsRaspiz) {
       this.wsRaspiz = new WebSocket(window.RASPIZ_WS);
@@ -54,7 +54,7 @@ export default {
       this.wsRaspiz.onerror = e => log.error("WS-Raspiz error", e);
       this.wsRaspiz.onclose = () => consoleEl.innerHTML += "[WS-Raspiz] déconnecté<br>";
     }
-
+*/
     // 3) Socket.IO Raspiz (événements BT en temps réel)
     if (!this.ioRaspiz) {
       this.ioRaspiz = io(window.RASPIZ_SOCKET);

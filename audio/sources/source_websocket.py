@@ -1,23 +1,16 @@
 # audio/sources/source_websocket.py
-
+import errno
 import asyncio
+import threading
 from collections import deque
 
-# Taille max du buffer audio (en nombre de chunks)
-MAX_BUFFER_SIZE = 200  # à ajuster selon latence/qualité
-
-# Buffer circulaire des chunks audio PCM (bytes)
-_audio_buffer = deque(maxlen=MAX_BUFFER_SIZE)
-
-# WebSocket Server (à intégrer dans flask_server.py ou serveur dédié)
-# Ce module fournit juste la logique
-_ws_clients = set()
-_websocket_server = None  # Reference globale pour arrêt propre
-
-# === API utilisable par audio_manager ===
+MAX_BUFFER_SIZE = 200
+_audio_buffer      = deque(maxlen=MAX_BUFFER_SIZE)
+_ws_clients        = set()
+_websocket_server  = None
 
 def get_next_chunk():
-    """Retourne un chunk audio (bytes) ou None s'il n'y en a pas."""
+    """Retourne un chunk audio (bytes) ou None."""
     if _audio_buffer:
         return _audio_buffer.popleft()
     return None
@@ -26,13 +19,9 @@ def has_data():
     return len(_audio_buffer) > 0
 
 def clear():
-    """Vide le buffer audio"""
     _audio_buffer.clear()
 
-# === Setup WebSocket serveur asyncio (à appeler au démarrage) ===
-
 async def handle_client(reader, writer):
-    """Gère un nouveau client ESP WebSocket"""
     peer = writer.get_extra_info("peername")
     print(f"[WS-AUDIO] 🔌 Client connecté : {peer}")
     _ws_clients.add(writer)
@@ -52,15 +41,26 @@ async def handle_client(reader, writer):
 
 async def start_server(port=8765):
     global _websocket_server
-    server = await asyncio.start_server(handle_client, host='0.0.0.0', port=port)
+    try:
+        server = await asyncio.start_server(
+            handle_client, host='0.0.0.0', port=port
+        )
+    except OSError as e:
+        if e.errno == errno.EADDRINUSE:
+            print(f"[WS-AUDIO] ⚠️ Port {port} occupé, démarrage ignoré.")
+            return
+        raise
     _websocket_server = server
     print(f"[WS-AUDIO] 🎧 Serveur WebSocket audio actif sur port {port}")
     async with server:
         await server.serve_forever()
 
 def start_async_server():
-    """Démarre le serveur asyncio dans un thread dédié"""
-    import threading
+    """Démarre le serveur audio si pas déjà lancé."""
+    global _websocket_server
+    if _websocket_server is not None:
+        print("[WS-AUDIO] ⚠️ Serveur déjà actif, démarrage ignoré.")
+        return
     def _run():
         asyncio.run(start_server())
     thread = threading.Thread(target=_run, daemon=True)
