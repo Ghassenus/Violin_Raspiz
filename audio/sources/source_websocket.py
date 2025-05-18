@@ -1,4 +1,3 @@
-# audio/sources/source_websocket.py
 import errno
 import asyncio
 import threading
@@ -10,7 +9,6 @@ _ws_clients        = set()
 _websocket_server  = None
 
 def get_next_chunk():
-    """Retourne un chunk audio (bytes) ou None."""
     if _audio_buffer:
         return _audio_buffer.popleft()
     return None
@@ -56,7 +54,6 @@ async def start_server(port=8765):
         await server.serve_forever()
 
 def start_async_server():
-    """Démarre le serveur audio si pas déjà lancé."""
     global _websocket_server
     if _websocket_server is not None:
         print("[WS-AUDIO] ⚠️ Serveur déjà actif, démarrage ignoré.")

@@ -1,51 +1,48 @@
 import { log } from './log.js';
 
-let audioEl;
+let muted = false;
 
 export default {
   init() {
-    audioEl = document.getElementById("audio_player");
-    const fileInput = document.getElementById("local_audio_file");
-    const urlBtn = document.getElementById("playURL");
-    const outputSelect = document.getElementById("audio_output");
-    const playBtn = document.getElementById("play");
-    const pauseBtn = document.getElementById("pause");
+    const fileInput   = document.getElementById("local_audio_file");
+    const urlBtn      = document.getElementById("playURL");
+    const playBtn     = document.getElementById("play");
+    const pauseBtn    = document.getElementById("pause");
+    const stopBtn     = document.getElementById("stop");
+    const volUpBtn    = document.getElementById("volup");
+    const volDownBtn  = document.getElementById("voldown");
+    const muteToggle  = document.getElementById("mute_toggle");
 
-    if (fileInput) fileInput.onchange = (e) => this.uploadLocalAudio(e);
-    if (urlBtn) urlBtn.onclick = () => this.playURL();
-    if (outputSelect) outputSelect.onchange = () => this.setOutput();
-    if (playBtn) playBtn.onclick = () => this.play();
-    if (pauseBtn) pauseBtn.onclick = () => this.pause();
+    if (fileInput)   fileInput.onchange  = (e) => this.uploadLocalAudio(e);
+    if (urlBtn)      urlBtn.onclick      = () => this.playURL();
+    if (playBtn)     playBtn.onclick     = () => this.play();
+    if (pauseBtn)    pauseBtn.onclick    = () => this.pause();
+    if (stopBtn)     stopBtn.onclick     = () => this.stop();
+    if (volUpBtn)    volUpBtn.onclick    = () => this.volume("up");
+    if (volDownBtn)  volDownBtn.onclick  = () => this.volume("down");
+    if (muteToggle)  muteToggle.onclick  = () => this.toggleMute();
 
-    // Mettre à jour le timer pendant la lecture audio
-    audioEl.addEventListener('timeupdate', () => {
-      const elapsed = Math.floor(audioEl.currentTime);
-      const min = Math.floor(elapsed / 60).toString().padStart(2, '0');
-      const sec = Math.floor(elapsed % 60).toString().padStart(2, '0');
-      document.getElementById("audio_timer").textContent = `${min}:${sec}`;
-    });
-    // Réinitialiser lorsque l'audio est terminé
-    audioEl.addEventListener('ended', () => {
-      document.getElementById("audio_timer").textContent = "00:00";
-      const statusEl = document.getElementById("audio_status");
-      if (statusEl) {
-        statusEl.innerHTML = `<div class="alert alert-secondary">Lecture terminée.</div>`;
-      }
-      audioEl.currentTime = 0;
-    });
+    // --- Listen to Socket.IO events from backend MPV ---
+    if (window.raspSocket) {
+      window.raspSocket.on('audio_status', state => {
+        this.displayStatus(state);
+      });
+    }
+
+    this._show("Contrôle audio prêt (tout joue sur le Pi)");
   },
 
   uploadLocalAudio(e) {
-  const file = e.target.files[0];
-  const fr   = new FormData();
-  fr.append("file", file);
-  fetch(`${window.RASPIZ_URL}/api/audio/upload`, {
-    method: "POST",
-    body: fr
-  })
-    .then(r => r.json())
-    .then(j => this._show(`Uploaded : ${j.status}`))
-    .catch(err => this._show(`❌ ${err}`));
+    const file = e.target.files[0];
+    const fr   = new FormData();
+    fr.append("file", file);
+    fetch(`${window.RASPIZ_URL}/api/audio/upload`, {
+      method: "POST",
+      body: fr
+    })
+      .then(r => r.json())
+      .then(j => this._show(`Upload : ${j.status}`))
+      .catch(err => this._show(`❌ ${err}`));
   },
 
   playURL() {
@@ -56,47 +53,98 @@ export default {
       body: JSON.stringify({ url })
     })
       .then(r => r.json())
-      .then(j => this._show(`Stream : ${j.status}`))
+      .then(j => this._show(`YouTube : ${j.status}`))
       .catch(err => this._show(`❌ ${err}`));
   },
 
-
-  setOutput() {
-    const target = document.getElementById("audio_output").value;
-    const statusEl = document.getElementById("audio_status");
-    if (statusEl) {
-      let targetLabel = target;
-      if (target === "both") targetLabel = "les deux sorties";
-      statusEl.innerHTML = `<div class="alert alert-info">🎧 Sortie audio réglée : ${targetLabel}</div>`;
-    }
-    log.info(`🎧 Sortie audio définie sur ${target}`);
-  },
-
   play() {
-    if (!audioEl.src) {
-      const statusEl = document.getElementById("audio_status");
-      if (statusEl) {
-        statusEl.innerHTML = `<div class="alert alert-warning">Aucune source audio sélectionnée.</div>`;
-      }
-      return;
-    }
-    audioEl.play().catch(err => {
-      log.error("Erreur lecture audio: " + err);
-    });
-    const statusEl = document.getElementById("audio_status");
-    if (statusEl) {
-      statusEl.innerHTML = `<div class="alert alert-success">Lecture en cours...</div>`;
-    }
-    log.info("Lecture audio démarrée");
+    fetch(`${window.RASPIZ_URL}/api/audio/play`, {method: "POST"});
+    this._show("▶️ Play envoyé");
   },
 
   pause() {
-    if (!audioEl.src) return;
-    audioEl.pause();
-    const statusEl = document.getElementById("audio_status");
-    if (statusEl) {
-      statusEl.innerHTML = `<div class="alert alert-secondary">Audio en pause.</div>`;
+    fetch(`${window.RASPIZ_URL}/api/audio/pause`, {method: "POST"});
+    this._show("⏸️ Pause envoyé");
+  },
+
+  stop() {
+    fetch(`${window.RASPIZ_URL}/api/audio/stop`, {method: "POST"});
+    this._show("⏹️ Stop envoyé");
+  },
+
+  volume(action) {
+    fetch(`${window.RASPIZ_URL}/api/audio/volume`, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({action})
+    });
+    this._show(`🔊 Volume action: ${action}`);
+  },
+
+  toggleMute() {
+    const action = muted ? "unmute" : "mute";
+    this.volume(action);
+    muted = !muted;
+    this.updateMuteBtn();
+  },
+
+  updateMuteBtn() {
+    const muteBtn = document.getElementById("mute_toggle");
+    if (muted) {
+      muteBtn.innerHTML = "🔈 Unmute";
+      muteBtn.classList.remove("btn-secondary");
+      muteBtn.classList.add("btn-warning");
+    } else {
+      muteBtn.innerHTML = "🔇 Mute";
+      muteBtn.classList.remove("btn-warning");
+      muteBtn.classList.add("btn-secondary");
     }
-    log.info("Lecture audio en pause");
+  },
+
+  // Affichage état MPV/status
+  displayStatus(state) {
+    // État de lecture
+    let etat = "⏳ Inconnu";
+    if (state["core-idle"]) {
+      etat = "En attente";
+    } else if (state.pause) {
+      etat = "⏸️ Pause";
+    } else {
+      etat = state['percent-pos'] > 0 ? "▶️ Lecture" : "🕗 Buffering/Start";
+    }
+    document.getElementById("audio_etat").innerText = etat;
+
+    // Titre
+    document.getElementById("audio_title").innerText = state["media-title"] || "--";
+
+    // Durée, temps joué, restant
+    const fmt = (s) => (isNaN(s) || s == null) ? "--" : new Date(s * 1000).toISOString().substr(14, 5);
+    const dur = state.duration || 0, pos = state["time-pos"] || 0;
+    document.getElementById("audio_duree").innerText = fmt(dur);
+    document.getElementById("audio_elapsed").innerText = fmt(pos);
+    document.getElementById("audio_rest").innerText = fmt(Math.max(0, dur - pos));
+
+    // Volume
+    const vol = state.volume !== undefined ? Math.round(state.volume) + "%" : "--";
+    document.getElementById("audio_volume").innerText = vol;
+
+    // Mute
+    muted = !!state.mute;
+    document.getElementById("audio_muted").innerText = muted ? "Oui" : "Non";
+    this.updateMuteBtn();
+
+    // Taux lecture réseau (simulé avec percent-pos et demuxer-cache-time)
+    document.getElementById("audio_net").innerText =
+      (state["percent-pos"] !== undefined ? Math.round(state["percent-pos"]) + "%" : "--");
+
+    // Buffer audio en secondes (demuxer-cache-time)
+    document.getElementById("audio_buffer").innerText =
+      state["demuxer-cache-time"] !== undefined ? state["demuxer-cache-time"].toFixed(1) + " s" : "--";
+  },
+
+  _show(msg) {
+    const statusEl = document.getElementById("audio_status");
+    if (statusEl) statusEl.innerHTML = `<div class="alert alert-info">${msg}</div>`;
+    log.info(msg);
   }
 };

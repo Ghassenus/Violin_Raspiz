@@ -1,14 +1,31 @@
-<h2>🎵 Audio</h2>
+<h2>🎵 Audio (joué sur Raspberry Pi)</h2>
 <input type="file" id="local_audio_file" class="form-control form-control-sm bg-dark text-light mb-2">
-<input id="url_input" class="form-control bg-dark text-light mb-2" placeholder="URL">
+<input id="url_input" class="form-control bg-dark text-light mb-2" placeholder="URL YouTube">
 <button id="playURL" class="btn btn-primary mb-2">▶️ Lire URL</button>
-<select id="audio_output" class="form-select bg-dark text-light mb-2">
-  <option value="bluetooth">Bluetooth</option>
-  <option value="jack">Jack</option>
-  <option value="both">Les deux</option>
-</select>
-<button id="play" class="btn btn-secondary me-2">▶️ Play</button>
-<button id="pause" class="btn btn-secondary">⏸️ Pause</button>
-<span id="audio_timer" class="ms-2">00:00</span>
+<hr>
+<div class="row mb-2">
+  <div class="col">
+    <button id="play" class="btn btn-success">▶️ Play</button>
+    <button id="pause" class="btn btn-warning">⏸️ Pause</button>
+    <button id="stop" class="btn btn-danger">⏹️ Stop</button>
+  </div>
+  <div class="col text-end">
+    <button id="volup" class="btn btn-info">🔊 +</button>
+    <button id="voldown" class="btn btn-info">🔉 -</button>
+    <button id="mute_toggle" class="btn btn-secondary">🔇 Mute</button>
+  </div>
+</div>
+
 <div id="audio_status" class="mt-2"></div>
-<audio id="audio_player" style="display: none;"></audio>
+
+<ul class="list-group mt-2" id="audio_infos" style="font-size: 1.0em;">
+  <li class="list-group-item bg-dark text-light"><b>État :</b> <span id="audio_etat">--</span></li>
+  <li class="list-group-item bg-dark text-light"><b>Titre :</b> <span id="audio_title">--</span></li>
+  <li class="list-group-item bg-dark text-light"><b>Durée totale :</b> <span id="audio_duree">--</span></li>
+  <li class="list-group-item bg-dark text-light"><b>Temps joué :</b> <span id="audio_elapsed">--</span></li>
+  <li class="list-group-item bg-dark text-light"><b>Temps restant :</b> <span id="audio_rest">--</span></li>
+  <li class="list-group-item bg-dark text-light"><b>Volume :</b> <span id="audio_volume">--</span></li>
+  <li class="list-group-item bg-dark text-light"><b>Mute :</b> <span id="audio_muted">--</span></li>
+  <li class="list-group-item bg-dark text-light"><b>Taux lecture réseau :</b> <span id="audio_net">--</span></li>
+  <li class="list-group-item bg-dark text-light"><b>Buffer audio (sec):</b> <span id="audio_buffer">--</span></li>
+</ul>

@@ -1,5 +1,0 @@
-192.168.1.67 - - [18/May/2025 03:44:46] "GET / HTTP/1.1" 304 -
-192.168.1.67 - - [18/May/2025 03:45:42] "GET /partials/audio.html HTTP/1.1" 304 -
-192.168.1.67 - - [18/May/2025 03:45:42] "GET /modules/audio.js HTTP/1.1" 304 -
-192.168.1.67 - - [18/May/2025 03:49:20] "GET /partials/wifi.html HTTP/1.1" 304 -
-192.168.1.67 - - [18/May/2025 03:49:20] "GET /modules/wifi.js HTTP/1.1" 304 -

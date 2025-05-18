@@ -1,5 +1,3 @@
-# audio/audio_manager.py
-
 import threading
 import time
 from pydub import AudioSegment
@@ -7,7 +5,6 @@ from pydub.playback import play
 from pydub.effects import normalize
 from collections import defaultdict
 from audio.sources import source_websocket
-from pydub import AudioSegment
 
 sources = {
     "local_file": [],
@@ -37,7 +34,7 @@ def apply_effects(segment: AudioSegment, settings: dict) -> AudioSegment:
         }).set_frame_rate(segment.frame_rate)
     return segment
 
-def mix_sources() -> AudioSegment:
+def mix_sources() -> AudioSegment | None:
     mix = None
     for key, queue in sources.items():
         if key == "esp1_bt" and source_websocket.has_data():
@@ -90,6 +87,9 @@ def stop_mixer():
     mixer_running = False
 
 def push_audio(source_key: str, audio: AudioSegment):
+    if source_key not in sources:
+        print(f"[AUDIO] Source inconnue: {source_key}")
+        return
     sources[source_key].append(audio)
 
 def set_source_params(source_key: str, volume=1.0, reverb=False, speed=1.0):
@@ -112,3 +112,16 @@ def pcm_chunk_to_audio(chunk: bytes, sample_rate=16000, sample_width=2, channels
         frame_rate=sample_rate,
         channels=channels
     )
+
+# Nouvelles fonctions de lecture directe
+def play_uploaded():
+    # Joue le dernier fichier uploadé
+    if sources["web_upload"]:
+        segment = sources["web_upload"][-1]
+        play(segment)
+
+def play_youtube():
+    # Joue le dernier stream YouTube
+    if sources["url_stream"]:
+        segment = sources["url_stream"][-1]
+        play(segment)

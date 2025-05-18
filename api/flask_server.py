@@ -1,21 +1,4 @@
 # api/flask_server.py
-from gevent import monkey
-monkey.patch_all(hread=False)
-
-# ——————————————————————————————————————————–
-# Silence Gevent’s at-fork-thread assertions (harmless)
-try:
-    import gevent.threading
-    _orig_after = gevent.threading._ForkHooks.after_fork_in_child
-    def _safe_after_fork(self):
-        try:
-            _orig_after(self)
-        except AssertionError:
-            pass
-    gevent.threading._ForkHooks.after_fork_in_child = _safe_after_fork
-except (ImportError, AttributeError):
-    pass
-# ——————————————————————————————————————————–
 
 from flask import Flask, jsonify, request
 from flask_socketio import SocketIO
@@ -24,13 +7,17 @@ from network import bluetooth_manager
 
 app = Flask(__name__)
 CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode="gevent")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
 # === Blueprints API ===
 from api.routes_bluetooth import bluetooth_api
 from api.routes_audio import audio_api
 app.register_blueprint(bluetooth_api)
 app.register_blueprint(audio_api)
+
+# Injection SocketIO dans audio_controller
+from audio import audio_controller
+audio_controller.init_socketio(socketio)
 
 # === REST simple ===
 @app.route('/')
@@ -76,7 +63,7 @@ def default_error_handler(e):
     print(f"[SOCKET.IO] ❌ Erreur non gérée : {e}")
 
 def start_flask(host='0.0.0.0', port=5000):
-    """Démarre Flask + Socket.IO via gevent."""
+    """Démarre Flask + Socket.IO"""
     socketio.run(app, host=host, port=port, debug=False)
 
 __all__ = ["start_flask", "socketio"]
